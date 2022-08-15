@@ -10,18 +10,18 @@
  * - Generating stepper-motor speed profiles in real time - David Austin, 2004
  * - Atmel AVR446: Linear speed control of stepper motor, 2006
  */
-#include "BasicStepperDriver.h"
+#include "BasicStepper.h"
 
 /*
  * Basic connection: only DIR, STEP are connected.
  * Microstepping controls should be hardwired.
  */
-BasicStepperDriver::BasicStepperDriver(short steps, short dir_pin, short step_pin)
-:BasicStepperDriver(steps, dir_pin, step_pin, PIN_UNCONNECTED)
+BasicStepper::BasicStepper(short steps, short dir_pin, short step_pin)
+:BasicStepper(steps, dir_pin, step_pin, PIN_UNCONNECTED)
 {
 }
 
-BasicStepperDriver::BasicStepperDriver(short steps, short dir_pin, short step_pin, short enable_pin)
+BasicStepper::BasicStepper(short steps, short dir_pin, short step_pin, short enable_pin)
 :motor_steps(steps), dir_pin(dir_pin), step_pin(step_pin), enable_pin(enable_pin)
 {
 	steps_to_cruise = 0;
@@ -37,7 +37,7 @@ BasicStepperDriver::BasicStepperDriver(short steps, short dir_pin, short step_pi
 /*
  * Initialize pins, calculate timings etc
  */
-void BasicStepperDriver::begin(float rpm, short microsteps){
+void BasicStepper::begin(float rpm, short microsteps){
     pinMode(dir_pin, OUTPUT);
     digitalWrite(dir_pin, HIGH);
 
@@ -58,7 +58,7 @@ void BasicStepperDriver::begin(float rpm, short microsteps){
 /*
  * Set target motor RPM (1-200 is a reasonable range)
  */
-void BasicStepperDriver::setRPM(float rpm){
+void BasicStepper::setRPM(float rpm){
     if (this->rpm == 0){        // begin() has not been called (old 1.0 code)
         begin(rpm, microsteps);
     }
@@ -67,9 +67,9 @@ void BasicStepperDriver::setRPM(float rpm){
 
 /*
  * Set stepping mode (1:microsteps)
- * Allowed ranges for BasicStepperDriver are 1:1 to 1:128
+ * Allowed ranges for BasicStepper are 1:1 to 1:128
  */
-short BasicStepperDriver::setMicrostep(short microsteps){
+short BasicStepper::setMicrostep(short microsteps){
     for (short ms=1; ms <= getMaxMicrostep(); ms<<=1){
         if (microsteps == ms){
             this->microsteps = microsteps;
@@ -83,12 +83,12 @@ short BasicStepperDriver::setMicrostep(short microsteps){
  * Set speed profile - CONSTANT_SPEED, LINEAR_SPEED (accelerated)
  * accel and decel are given in [full steps/s^2]
  */
-void BasicStepperDriver::setSpeedProfile(Mode mode, short accel, short decel){
+void BasicStepper::setSpeedProfile(Mode mode, short accel, short decel){
     profile.mode = mode;
     profile.accel = accel;
     profile.decel = decel;
 }
-void BasicStepperDriver::setSpeedProfile(struct Profile profile){
+void BasicStepper::setSpeedProfile(struct Profile profile){
     this->profile = profile;
 }
 
@@ -96,14 +96,14 @@ void BasicStepperDriver::setSpeedProfile(struct Profile profile){
  * Move the motor a given number of steps.
  * positive to move forward, negative to reverse
  */
-void BasicStepperDriver::move(long steps){
+void BasicStepper::move(long steps){
     startMove(steps);
     while (nextAction());
 }
 /*
  * Move the motor a given number of degrees (1-360)
  */
-void BasicStepperDriver::rotate(long deg){
+void BasicStepper::rotate(long deg){
     move(calcStepsForRotation(deg));
 }
 /*
@@ -111,14 +111,14 @@ void BasicStepperDriver::rotate(long deg){
  * Note that using this function even once will add 1K to your program size
  * due to inclusion of float support.
  */
-void BasicStepperDriver::rotate(double deg){
+void BasicStepper::rotate(double deg){
     move(calcStepsForRotation(deg));
 }
 
 /*
  * Set up a new move (calculate and save the parameters)
  */
-void BasicStepperDriver::startMove(long steps, long time){
+void BasicStepper::startMove(long steps, long time){
     float speed;
     // set up new move
     dir_state = (steps >= 0) ? HIGH : LOW;
@@ -169,7 +169,7 @@ void BasicStepperDriver::startMove(long steps, long time){
  * Alter a running move by adding/removing steps
  * FIXME: This is a naive implementation and it only works well in CRUISING state
  */
-void BasicStepperDriver::alterMove(long steps){
+void BasicStepper::alterMove(long steps){
     switch (getCurrentState()){
     case ACCELERATING: // this also works but will keep the original speed target
     case CRUISING:
@@ -190,7 +190,7 @@ void BasicStepperDriver::alterMove(long steps){
 /*
  * Brake early.
  */
-void BasicStepperDriver::startBrake(void){
+void BasicStepper::startBrake(void){
     switch (getCurrentState()){
     case CRUISING:  // this applies to both CONSTANT_SPEED and LINEAR_SPEED modes
         steps_remaining = steps_to_brake;
@@ -207,7 +207,7 @@ void BasicStepperDriver::startBrake(void){
 /*
  * Stop movement immediately and return remaining steps.
  */
-long BasicStepperDriver::stop(void){
+long BasicStepper::stop(void){
     long retval = steps_remaining;
     steps_remaining = 0;
     return retval;
@@ -215,7 +215,7 @@ long BasicStepperDriver::stop(void){
 /*
  * Return calculated time to complete the given move
  */
-long BasicStepperDriver::getTimeForMove(long steps){
+long BasicStepper::getTimeForMove(long steps){
     float t;
     long cruise_steps;
     float speed;
@@ -242,7 +242,7 @@ long BasicStepperDriver::getTimeForMove(long steps){
  * Move the motor an integer number of degrees (360 = full rotation)
  * This has poor precision for small amounts, since step is usually 1.8deg
  */
-void BasicStepperDriver::startRotate(long deg){
+void BasicStepper::startRotate(long deg){
     startMove(calcStepsForRotation(deg));
 }
 /*
@@ -250,14 +250,14 @@ void BasicStepperDriver::startRotate(long deg){
  * Note that calling this function will increase program size substantially
  * due to inclusion of float support.
  */
-void BasicStepperDriver::startRotate(double deg){
+void BasicStepper::startRotate(double deg){
     startMove(calcStepsForRotation(deg));
 }
 
 /*
  * calculate the interval til the next pulse
  */
-void BasicStepperDriver::calcStepPulse(void){
+void BasicStepper::calcStepPulse(void){
     if (steps_remaining <= 0){  // this should not happen, but avoids strange calculations
         return;
     }
@@ -290,7 +290,7 @@ void BasicStepperDriver::calcStepPulse(void){
  * Yield to step control
  * Toggle step and return time until next change is needed (micros)
  */
-long BasicStepperDriver::nextAction(void){
+long BasicStepper::nextAction(void){
     if (steps_remaining > 0){
         delayMicros(next_action_interval, last_action_end);
         /*
@@ -316,7 +316,7 @@ long BasicStepperDriver::nextAction(void){
     return next_action_interval;
 }
 
-enum BasicStepperDriver::State BasicStepperDriver::getCurrentState(void){
+enum BasicStepper::State BasicStepper::getCurrentState(void){
     enum State state;
     if (steps_remaining <= 0){
         state = STOPPED;
@@ -335,25 +335,25 @@ enum BasicStepperDriver::State BasicStepperDriver::getCurrentState(void){
  * Configure which logic state on ENABLE pin means active
  * when using SLEEP (default) this is active HIGH
  */
-void BasicStepperDriver::setEnableActiveState(short state){
+void BasicStepper::setEnableActiveState(short state){
     enable_active_state = state;
 }
 /*
  * Enable/Disable the motor by setting a digital flag
  */
-void BasicStepperDriver::enable(void){
+void BasicStepper::enable(void){
     if IS_CONNECTED(enable_pin){
         digitalWrite(enable_pin, enable_active_state);
     };
     delayMicros(2);
 }
 
-void BasicStepperDriver::disable(void){
+void BasicStepper::disable(void){
     if IS_CONNECTED(enable_pin){
         digitalWrite(enable_pin, (enable_active_state == HIGH) ? LOW : HIGH);
     }
 }
 
-short BasicStepperDriver::getMaxMicrostep(){
-    return BasicStepperDriver::MAX_MICROSTEP;
+short BasicStepper::getMaxMicrostep(){
+    return BasicStepper::MAX_MICROSTEP;
 }
