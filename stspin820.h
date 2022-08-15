@@ -38,11 +38,11 @@ public:
      
     STSPIN820(short steps, short dir_pin, short step_pin);
     STSPIN820(short steps, short dir_pin, short step_pin, short enable_pin);
-    */
     void begin(float rpm=60, short microsteps=1);
-    /*
+  
      * Fully wired. All the necessary control pins for STSPIN820 are connected.
      */
+    
     STSPIN820(short steps, short dir_pin, short step_pin, short ms1_pin, short ms2_pin, short ms3_pin);
     STSPIN820(short steps, short dir_pin, short step_pin, short enable_pin, short ms1_pin, short ms2_pin, short ms3_pin);
     short setMicrostep(short microsteps) override;
