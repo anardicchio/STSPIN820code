@@ -28,7 +28,7 @@
  * Basic Stepper Driver class.
  * Microstepping level should be externally controlled or hardwired.
  */
-class BasicStepperDriver {
+class BasicStepper {
 public:
     enum Mode {CONSTANT_SPEED, LINEAR_SPEED};
     enum State {STOPPED, ACCELERATING, CRUISING, DECELERATING};
@@ -110,8 +110,8 @@ public:
     /*
      * Basic connection: DIR, STEP are connected.
      */
-    BasicStepperDriver(short steps, short dir_pin, short step_pin);
-    BasicStepperDriver(short steps, short dir_pin, short step_pin, short enable_pin);
+    BasicStepper(short steps, short dir_pin, short step_pin);
+    BasicStepper(short steps, short dir_pin, short step_pin, short enable_pin);
     /*
      * Initialize pins, calculate timings etc
      */
