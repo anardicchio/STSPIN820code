@@ -4,9 +4,9 @@
 #ifndef STSPIN820_H
 #define STSPIN820_H
 #include <Arduino.h>
-#include "BasicStepperDriver.h"
+#include "BasicStepper.h"
 
-class STSPIN820 : public BasicStepperDriver {
+class STSPIN820 : public BasicStepper {
 protected:
     static const uint8_t MS_TABLE[];
     short ms1_pin = PIN_UNCONNECTED;
