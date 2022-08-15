@@ -14,11 +14,11 @@ const uint8_t STSPIN820::MS_TABLE[] = {0b000, 0b001, 0b010, 0b011, 0b100, 0b101,
  * Microstepping controls should be hardwired.
  */
 STSPIN820::STSPIN820(short steps, short dir_pin, short step_pin)
-:BasicStepper(steps, dir_pin, step_pin)
+:BasicStep(steps, dir_pin, step_pin)
 {}
 
 STSPIN820::STSPIN820(short steps, short dir_pin, short step_pin, short enable_pin)
-:BasicStepper(steps, dir_pin, step_pin, enable_pin)
+:BasicStep(steps, dir_pin, step_pin, enable_pin)
 {}
 
 /*
@@ -26,17 +26,17 @@ STSPIN820::STSPIN820(short steps, short dir_pin, short step_pin, short enable_pi
  * All the necessary control pins for STSPIN820 are connected.
  */
 STSPIN820::STSPIN820(short steps, short dir_pin, short step_pin, short ms1_pin, short ms2_pin, short ms3_pin)
-:BasicStepper(steps, dir_pin, step_pin),
+:BasicStep(steps, dir_pin, step_pin),
     ms1_pin(ms1_pin), ms2_pin(ms2_pin), ms3_pin(ms3_pin)
 {}
 
 STSPIN820::STSPIN820(short steps, short dir_pin, short step_pin, short enable_pin, short ms1_pin, short ms2_pin, short ms3_pin)
-:BasicStepper(steps, dir_pin, step_pin, enable_pin),
+:BasicStep(steps, dir_pin, step_pin, enable_pin),
 ms1_pin(ms1_pin), ms2_pin(ms2_pin), ms3_pin(ms3_pin)
 {}
 
 void STSPIN820::begin(float rpm, short microsteps){
-    BasicStepper::begin(rpm, microsteps);
+    BasicStep::begin(rpm, microsteps);
 
     if (!IS_CONNECTED(ms1_pin) || !IS_CONNECTED(ms2_pin) || !IS_CONNECTED(ms3_pin)){
         return;
@@ -53,7 +53,7 @@ void STSPIN820::begin(float rpm, short microsteps){
  * If the control pins are not connected, we recalculate the timing only
  */
 short STSPIN820::setMicrostep(short microsteps){
-    BasicStepper::setMicrostep(microsteps);
+    BasicStep::setMicrostep(microsteps);
 
     if (!IS_CONNECTED(ms1_pin) || !IS_CONNECTED(ms2_pin) || !IS_CONNECTED(ms3_pin)){
         return this->microsteps;
