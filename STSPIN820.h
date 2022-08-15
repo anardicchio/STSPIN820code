@@ -36,10 +36,12 @@ public:
      * Basic connection: only DIR, STEP are connected.
      * Microstepping controls should be hardwired.
      
+     
     STSPIN820(short steps, short dir_pin, short step_pin);
     STSPIN820(short steps, short dir_pin, short step_pin, short enable_pin);
     void begin(float rpm=60, short microsteps=1);
-  
+     
+ 
      * Fully wired. All the necessary control pins for STSPIN820 are connected.
      */
     
