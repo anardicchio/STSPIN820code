@@ -43,8 +43,8 @@ public:
     /*
      * Fully wired. All the necessary control pins for STSPIN820 are connected.
      */
-    A4988(short steps, short dir_pin, short step_pin, short ms1_pin, short ms2_pin, short ms3_pin);
-    A4988(short steps, short dir_pin, short step_pin, short enable_pin, short ms1_pin, short ms2_pin, short ms3_pin);
+    STSPIN820(short steps, short dir_pin, short step_pin, short ms1_pin, short ms2_pin, short ms3_pin);
+    STSPIN820(short steps, short dir_pin, short step_pin, short enable_pin, short ms1_pin, short ms2_pin, short ms3_pin);
     short setMicrostep(short microsteps) override;
 };
 #endif // STSPIN820
